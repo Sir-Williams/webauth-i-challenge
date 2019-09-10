@@ -11,7 +11,7 @@ const knexSessionStore = connectSessionStore(session)
 const sessionConfig = {
     name: 'user session',
     secret: 'the opposite of yeet is to yoink',
-    coockie: {
+    cookie: {
         maxAge: 1000 * 60 * 60,
         secure: false,
         httpOnly: true,
