@@ -5,6 +5,7 @@ const server = express();
 const session = require('express-session')
 const connectSessionStore = require ('connect-session-knex')
 const db = require('./data/dbConfig.js')
+require('dotenv').config()
 
 const knexSessionStore = connectSessionStore(session)
 

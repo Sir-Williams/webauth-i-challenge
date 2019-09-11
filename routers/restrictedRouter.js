@@ -1,8 +1,8 @@
 const router = require('express').Router();
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const Users = require('./Router-Model.js');
-const restricted = require('./restrictedMiddleware.js')
 
 router.post('/register', (req, res) => {
     let user = req.body;
@@ -11,7 +11,11 @@ router.post('/register', (req, res) => {
 
     Users.add(user)
         .then(registered => {
-            res.status(201).json(registered)
+            const token = generateToken(registered)
+            res.status(201).json({
+                user: registered,
+                token
+            })
         })
         .catch(err => {
             res.status(500).json({ error: 'Error logging in' });
@@ -25,9 +29,9 @@ router.post('/login', (req, res) => {
     .first()
     .then(user => {
         if(user && bcrypt.compareSync(password, user.password)){
-            req.session.user = user;
+            const token = generateToken(user)
 
-            res.status(200).json({ message: "Succeful login"})
+            res.status(200).json({ message: "Succeful login", token})
         } else {
             res.status(401).json({ message: "incorrect password and/or username" })
         }
@@ -37,17 +41,16 @@ router.post('/login', (req, res) => {
     })
 })
 
-router.get('/logout', (req, res) => {
-	if (req.session) {
-		req.session.destroy(err => {
-			if (err) {
-				res.json({ message: 'There was an error' });
-            }
-            else {
-                res.end();
-            }
-		});
-	} 
-});
+function generateToken(user) {
+    const payload = {
+        sub: user.id,
+        username: user.username
+    }
+    const options = {
+        expiresIn: '1d'
+    }
+
+    return jwt.sign(payload, process.env.JWT_SECRET, options)
+}
 
 module.exports = router;
